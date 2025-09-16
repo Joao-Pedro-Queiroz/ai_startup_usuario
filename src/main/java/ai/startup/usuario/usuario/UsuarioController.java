@@ -48,6 +48,12 @@ public class UsuarioController {
     }
 
     @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/users/by-email")
+    public ResponseEntity<UsuarioDTO> obterPorEmail(@RequestParam String email) {
+        return ResponseEntity.ok(service.obterPorEmail(email));
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/users/{id}")
     public ResponseEntity<UsuarioDTO> obter(@PathVariable String id) {
         return ResponseEntity.ok(service.obter(id));

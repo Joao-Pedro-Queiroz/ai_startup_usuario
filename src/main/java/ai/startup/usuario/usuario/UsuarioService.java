@@ -81,6 +81,12 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
     }
 
+    public UsuarioDTO obterPorEmail(String email) {
+        return repo.findByEmail(email.toLowerCase())
+                .map(this::toDTO)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+    }
+
     public List<UsuarioDTO> listar() {
         return repo.findAll().stream().map(this::toDTO).toList();
     }
