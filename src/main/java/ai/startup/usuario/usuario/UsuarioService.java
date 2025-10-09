@@ -3,8 +3,15 @@ package ai.startup.usuario.usuario;
 import ai.startup.usuario.auth.AuthRequestDTO;
 import ai.startup.usuario.auth.AuthResponseDTO;
 import ai.startup.usuario.auth.JwtService;
+import ai.startup.usuario.clients.PerfilClient;
+import ai.startup.usuario.plano.UserPlan;
+import ai.startup.usuario.plano.UserPlanMapper;
+import ai.startup.usuario.plano.UserPlanRepository;
+import ai.startup.usuario.support.TemplateLoader;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -14,9 +21,21 @@ public class UsuarioService {
     private final UsuarioRepository repo;
     private final JwtService jwt;
 
-    public UsuarioService(UsuarioRepository repo, JwtService jwt) {
+    // NOVO: dependências para provisionar perfil e salvar plano localmente
+    private final PerfilClient perfilClient;
+    private final TemplateLoader templateLoader;
+    private final UserPlanRepository userPlanRepo;
+
+    public UsuarioService(UsuarioRepository repo,
+                          JwtService jwt,
+                          PerfilClient perfilClient,
+                          TemplateLoader templateLoader,
+                          UserPlanRepository userPlanRepo) {
         this.repo = repo;
         this.jwt = jwt;
+        this.perfilClient = perfilClient;
+        this.templateLoader = templateLoader;
+        this.userPlanRepo = userPlanRepo;
     }
 
     public UsuarioDTO criar(UsuarioCreateDTO dto) {
@@ -41,8 +60,8 @@ public class UsuarioService {
         return toDTO(repo.save(u));
     }
 
+    /** Registro público: força permissao=USER + provisiona Perfil (API) + salva UserPlan (local) */
     public AuthResponseDTO registrar(UsuarioCreateDTO dto) {
-        // mesmas regras de criação, mas FORÇANDO permissao = USER
         if (dto.email() != null && repo.existsByEmail(dto.email().toLowerCase()))
             throw new RuntimeException("E-mail já cadastrado.");
         if (dto.cpf() != null && repo.existsByCpf(normalizarCpf(dto.cpf())))
@@ -59,10 +78,39 @@ public class UsuarioService {
         u.setWins(0L);
         u.setStreaks(0L);
         u.setXp(0L);
-        u.setPermissao("USER"); // <- força USER no registro público
+        u.setPermissao("USER"); // <- força USER
 
         Usuario salvo = repo.save(u);
+
+        // Gera JWT (ainda não retorna)
         String token = jwt.gerarToken(salvo);
+        String bearer = "Bearer " + token;
+
+        // 1) Cria PERFIL na API de Perfil usando o template (sem created_at/updated_at)
+        try {
+            var perfilBody = templateLoader.loadProfileTemplate(salvo.getId());
+            perfilClient.criarPerfil(bearer, perfilBody);
+        } catch (Exception e) {
+            // política: falhou provisionamento -> reverte cadastro (ou só loga; aqui vou abortar com 502)
+            repo.deleteById(salvo.getId());
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Falha ao provisionar Perfil", e);
+        }
+
+        // 2) Salva USER PLAN localmente (não existe API externa para plano)
+        try {
+            var planBody = templateLoader.loadUserPlanTemplate(salvo.getId());
+            UserPlan plan = UserPlanMapper.fromTemplateMap(planBody);
+            // evita duplicar se houver tentativa repetida (não deve ocorrer no register, mas fica seguro)
+            userPlanRepo.findByUserId(salvo.getId()).ifPresentOrElse(
+                __ -> {}, () -> userPlanRepo.save(plan)
+            );
+        } catch (Exception e) {
+            // se o plano falhar, aqui também reverto o usuário para manter consistência
+            repo.deleteById(salvo.getId());
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Falha ao salvar UserPlan", e);
+        }
+
+        // Sucesso: devolve o token
         return new AuthResponseDTO(token, "Bearer");
     }
 
@@ -91,7 +139,6 @@ public class UsuarioService {
         return repo.findAll().stream().map(this::toDTO).toList();
     }
 
-    /** update parcial: só aplica campos não-nulos do DTO */
     public UsuarioDTO atualizar(String id, UsuarioUpdateDTO dto, String authPermissao) {
         Usuario u = repo.findById(id).orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
@@ -106,7 +153,6 @@ public class UsuarioService {
         if (dto.streaks() != null) u.setStreaks(dto.streaks());
         if (dto.xp() != null) u.setXp(dto.xp());
 
-        // mudar permissão só se ADMIN
         if (dto.permissao() != null) {
             if (!"ADMIN".equalsIgnoreCase(authPermissao))
                 throw new RuntimeException("Apenas ADMIN pode alterar a permissão.");
