@@ -7,7 +7,7 @@ import java.util.Map;
 public class UserPlanMapper {
     public static UserPlan fromTemplateMap(Map<String,Object> tpl) {
         return UserPlan.builder()
-                .user_id((String) tpl.get("user_id"))
+                .userId((String) tpl.get("user_id"))
                 .topics((Map<String,Object>) tpl.get("topics"))
                 .build();
     }
