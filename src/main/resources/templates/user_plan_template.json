@@ -65,7 +65,7 @@
         { "subskill": "quadratic_equations", "structure": "quadratic_word_problem", "difficulty": "", "count": 0 },
         { "subskill": "quadratic_equations", "structure": "evaluating_quadratic_functions", "difficulty": "", "count": 0 },
 
-        { "subskill": "linear_and_quadratic", "structure": "identifying_solution", "difficulty": "", "count": 0 },
+        { "subskill": "linear_and_quadratic", "structure": "identifying_solution_adv", "difficulty": "", "count": 0 },
 
         { "subskill": "polynomials", "structure": "evaluating_polynomials", "difficulty": "", "count": 0 }
       ]

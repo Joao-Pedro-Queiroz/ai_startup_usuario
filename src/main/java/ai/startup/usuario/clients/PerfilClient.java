@@ -10,7 +10,7 @@ import java.util.Map;
 @Component
 public class PerfilClient {
     private final RestTemplate rt = new RestTemplate();
-    private final String base = "http://localhost:8082"; // ajuste p/ seu perfil-service
+    private final String base = "http://localhost:8084"; // ajuste p/ seu perfil-service
 
     public void criarPerfil(String bearerToken, Map<String,Object> body) {
         var url = base + "/perfis";

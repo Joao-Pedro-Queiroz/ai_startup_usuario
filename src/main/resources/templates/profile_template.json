@@ -546,7 +546,7 @@
           "estruturas_vistas_s": 0,
           "total_estruturas_s": 1,
           "structures": {
-            "identifying_solution": {
+            "identifying_solution_adv": {
               "attempts_sc": 0,
               "correct_sc": 0,
               "hints_rate_sc": 0.0,
