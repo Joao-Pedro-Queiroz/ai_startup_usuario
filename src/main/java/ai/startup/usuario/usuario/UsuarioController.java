@@ -34,6 +34,16 @@ public class UsuarioController {
         return ResponseEntity.ok(service.registrar(dto));
     }
 
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/users/me")
+    public ResponseEntity<UsuarioDTO> me(HttpServletRequest req) {
+        String email = (String) req.getAttribute("authEmail"); // vindo do SecurityFilter
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(service.obterPorEmail(email));
+    }
+
     // CRUD
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/users")
@@ -45,12 +55,6 @@ public class UsuarioController {
     @GetMapping("/users")
     public ResponseEntity<List<UsuarioDTO>> listar() {
         return ResponseEntity.ok(service.listar());
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @GetMapping("/users/by-email")
-    public ResponseEntity<UsuarioDTO> obterPorEmail(@RequestParam String email) {
-        return ResponseEntity.ok(service.obterPorEmail(email));
     }
 
     @SecurityRequirement(name = "bearerAuth")
