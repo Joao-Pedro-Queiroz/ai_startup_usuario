@@ -1,4 +1,3 @@
-// src/main/java/ai/startup/usuario/clients/PerfilClient.java
 package ai.startup.usuario.clients;
 
 import org.springframework.http.*;
@@ -10,7 +9,7 @@ import java.util.Map;
 @Component
 public class PerfilClient {
     private final RestTemplate rt = new RestTemplate();
-    private final String base = "http://localhost:8084"; // ajuste p/ seu perfil-service
+    private final String base = "http://localhost:8084";
 
     public void criarPerfil(String bearerToken, Map<String,Object> body) {
         var url = base + "/perfis";

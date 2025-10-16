@@ -39,10 +39,15 @@ public class UsuarioService {
     }
 
     public UsuarioDTO criar(UsuarioCreateDTO dto) {
-        if (dto.email() != null && repo.existsByEmail(dto.email().toLowerCase()))
-            throw new RuntimeException("E-mail já cadastrado.");
-        if (dto.cpf() != null && repo.existsByCpf(normalizarCpf(dto.cpf())))
-            throw new RuntimeException("CPF já cadastrado.");
+        if (dto == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payload inválido.");
+        }
+        if (dto.email() != null && repo.existsByEmail(dto.email().toLowerCase())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado.");
+        }
+        if (dto.cpf() != null && repo.existsByCpf(normalizarCpf(dto.cpf()))) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado.");
+        }
 
         Usuario u = new Usuario();
         u.setNome(dto.nome());
@@ -62,10 +67,15 @@ public class UsuarioService {
 
     /** Registro público: força permissao=USER + provisiona Perfil (API) + salva UserPlan (local) */
     public AuthResponseDTO registrar(UsuarioCreateDTO dto) {
-        if (dto.email() != null && repo.existsByEmail(dto.email().toLowerCase()))
-            throw new RuntimeException("E-mail já cadastrado.");
-        if (dto.cpf() != null && repo.existsByCpf(normalizarCpf(dto.cpf())))
-            throw new RuntimeException("CPF já cadastrado.");
+        if (dto == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payload inválido.");
+        }
+        if (dto.email() != null && repo.existsByEmail(dto.email().toLowerCase())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado.");
+        }
+        if (dto.cpf() != null && repo.existsByCpf(normalizarCpf(dto.cpf()))) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado.");
+        }
 
         Usuario u = new Usuario();
         u.setNome(dto.nome());
@@ -115,24 +125,32 @@ public class UsuarioService {
     }
 
     public AuthResponseDTO autenticar(AuthRequestDTO dto) {
-        Usuario u = repo.findByEmail(dto.email().toLowerCase())
-                .orElseThrow(() -> new RuntimeException("Credenciais inválidas."));
+        if (dto == null || dto.email() == null || dto.senha() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail e senha são obrigatórios.");
+        }
 
-        if (u.getSenhaHash() == null || !BCrypt.checkpw(dto.senha(), u.getSenhaHash()))
-            throw new RuntimeException("Credenciais inválidas.");
+        Usuario u = repo.findByEmail(dto.email().toLowerCase())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas."));
+
+        if (u.getSenhaHash() == null || !BCrypt.checkpw(dto.senha(), u.getSenhaHash())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas.");
+        }
 
         return new AuthResponseDTO(jwt.gerarToken(u), "Bearer");
     }
 
     public UsuarioDTO obter(String id) {
         return repo.findById(id).map(this::toDTO)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
     }
 
     public UsuarioDTO obterPorEmail(String email) {
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail é obrigatório.");
+        }
         return repo.findByEmail(email.toLowerCase())
                 .map(this::toDTO)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
     }
 
     public List<UsuarioDTO> listar() {
@@ -140,7 +158,12 @@ public class UsuarioService {
     }
 
     public UsuarioDTO atualizar(String id, UsuarioUpdateDTO dto, String authPermissao) {
-        Usuario u = repo.findById(id).orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+        var u = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
+
+        if (dto == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payload inválido.");
+        }
 
         if (dto.nome() != null) u.setNome(dto.nome());
         if (dto.sobrenome() != null) u.setSobrenome(dto.sobrenome());
@@ -154,8 +177,9 @@ public class UsuarioService {
         if (dto.xp() != null) u.setXp(dto.xp());
 
         if (dto.permissao() != null) {
-            if (!"ADMIN".equalsIgnoreCase(authPermissao))
-                throw new RuntimeException("Apenas ADMIN pode alterar a permissão.");
+            if (!"ADMIN".equalsIgnoreCase(authPermissao)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Apenas ADMIN pode alterar a permissão.");
+            }
             u.setPermissao(dto.permissao().toUpperCase());
         }
 
@@ -163,7 +187,9 @@ public class UsuarioService {
     }
 
     public void deletar(String id) {
-        if (!repo.existsById(id)) throw new RuntimeException("Usuário não encontrado.");
+        if (!repo.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado.");
+        }
         repo.deleteById(id);
     }
 
