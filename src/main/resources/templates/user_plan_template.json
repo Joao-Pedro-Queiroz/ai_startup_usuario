@@ -5,40 +5,39 @@
       "allocation": {
         "limit": 0,
         "subskills": [
+          { "subskill": "absolute_value", "count": 0 },
+          { "subskill": "linear_inequality", "count": 0 },
+          { "subskill": "isolating_constants", "count": 0 },
           { "subskill": "isolating_variables", "count": 0 },
           { "subskill": "linear_equations", "count": 0 },
-          { "subskill": "system_of_linear_equations", "count": 0 },
           { "subskill": "linear_translation", "count": 0 },
-          { "subskill": "linear_inequality", "count": 0 },
-          { "subskill": "absolute_value", "count": 0 },
           { "subskill": "linear_word_problems", "count": 0 },
-          { "subskill": "isolating_constants", "count": 0 }
+          { "subskill": "system_of_linear_equations", "count": 0 }
         ]
       },
       "items": [
-        { "subskill": "isolating_variables", "structure": "one_step_isolating_variables", "difficulty": "", "count": 0 },
-        { "subskill": "isolating_variables", "structure": "two_step_isolating_variables", "difficulty": "", "count": 0 },
+        { "subskill": "absolute_value", "structure": "identifying_solutions", "difficulty": "", "count": 0 },
+        { "subskill": "absolute_value", "structure": "absolute_value_functions", "difficulty": "", "count": 0 },
+
+        { "subskill": "linear_inequality", "structure": "identifying_solutions_of_linear_inequalities", "difficulty": "", "count": 0 },
+
+        { "subskill": "isolating_constants", "structure": "rearranging_equations", "difficulty": "", "count": 0 },
+
+        { "subskill": "isolating_variables", "structure": "two_step_solution", "difficulty": "", "count": 0 },
+        { "subskill": "isolating_variables", "structure": "one_step_solution", "difficulty": "", "count": 0 },
 
         { "subskill": "linear_equations", "structure": "identifying_intercept", "difficulty": "", "count": 0 },
         { "subskill": "linear_equations", "structure": "properties_of_a_line", "difficulty": "", "count": 0 },
         { "subskill": "linear_equations", "structure": "evaluating_linear_functions", "difficulty": "", "count": 0 },
 
-        { "subskill": "system_of_linear_equations", "structure": "identifying_solution", "difficulty": "", "count": 0 },
-        { "subskill": "system_of_linear_equations", "structure": "classifying_system_of_linear_equations", "difficulty": "", "count": 0 },
-
-        { "subskill": "linear_translation", "structure": "horizontal_translation", "difficulty": "", "count": 0 },
         { "subskill": "linear_translation", "structure": "vertical_translation", "difficulty": "", "count": 0 },
-
-        { "subskill": "linear_inequality", "structure": "identifying_solutions_of_linear_inequalities", "difficulty": "", "count": 0 },
-
-        { "subskill": "absolute_value", "structure": "identifying_solutions", "difficulty": "", "count": 0 },
-        { "subskill": "absolute_value", "structure": "absolute_value_functions", "difficulty": "", "count": 0 },
 
         { "subskill": "linear_word_problems", "structure": "linear_inequality_word_problem", "difficulty": "", "count": 0 },
         { "subskill": "linear_word_problems", "structure": "geometry_linear_word_problem", "difficulty": "", "count": 0 },
         { "subskill": "linear_word_problems", "structure": "interpreting_linear_equations", "difficulty": "", "count": 0 },
 
-        { "subskill": "isolating_constants", "structure": "rearranging_equations", "difficulty": "", "count": 0 }
+        { "subskill": "system_of_linear_equations", "structure": "identifying_solution", "difficulty": "", "count": 0 },
+        { "subskill": "system_of_linear_equations", "structure": "classifying_system_of_linear_equations", "difficulty": "", "count": 0 }
       ]
     },
 
@@ -47,27 +46,23 @@
         "limit": 0,
         "subskills": [
           { "subskill": "equivalent_expressions", "count": 0 },
-          { "subskill": "radicals_and_exponents", "count": 0 },
           { "subskill": "quadratic_equations", "count": 0 },
-          { "subskill": "linear_and_quadratic", "count": 0 },
-          { "subskill": "polynomials", "count": 0 }
+          { "subskill": "radicals_and_exponents", "count": 0 },
+          { "subskill": "linear_and_quadratic", "count": 0 }
         ]
       },
       "items": [
         { "subskill": "equivalent_expressions", "structure": "adding_and_subtracting_exponents", "difficulty": "", "count": 0 },
         { "subskill": "equivalent_expressions", "structure": "multiplying_and_dividing_exponents", "difficulty": "", "count": 0 },
 
-        { "subskill": "radicals_and_exponents", "structure": "evaluating_exponent_expressions", "difficulty": "", "count": 0 },
-        { "subskill": "radicals_and_exponents", "structure": "converting_radicals_exponents", "difficulty": "", "count": 0 },
-
-        { "subskill": "quadratic_equations", "structure": "evaluating_solutions_of_quadratics", "difficulty": "", "count": 0 },
-        { "subskill": "quadratic_equations", "structure": "evaluating_maximum_and_minimum", "difficulty": "", "count": 0 },
-        { "subskill": "quadratic_equations", "structure": "quadratic_word_problem", "difficulty": "", "count": 0 },
         { "subskill": "quadratic_equations", "structure": "evaluating_quadratic_functions", "difficulty": "", "count": 0 },
+        { "subskill": "quadratic_equations", "structure": "quadratic_word_problem", "difficulty": "", "count": 0 },
+        { "subskill": "quadratic_equations", "structure": "evaluating_maximum_and_minimumm", "difficulty": "", "count": 0 },
+        { "subskill": "quadratic_equations", "structure": "evaluating_solutions_of_quadratics", "difficulty": "", "count": 0 },
 
-        { "subskill": "linear_and_quadratic", "structure": "identifying_solution_adv", "difficulty": "", "count": 0 },
+        { "subskill": "radicals_and_exponents", "structure": "evaluating_exponent_expressions", "difficulty": "", "count": 0 },
 
-        { "subskill": "polynomials", "structure": "evaluating_polynomials", "difficulty": "", "count": 0 }
+        { "subskill": "linear_and_quadratic", "structure": "identifying_solution_adv", "difficulty": "", "count": 0 }
       ]
     },
 
@@ -75,33 +70,23 @@
       "allocation": {
         "limit": 0,
         "subskills": [
-          { "subskill": "ratios_rates_and_proportional_relationships", "count": 0 },
-          { "subskill": "percentages", "count": 0 },
           { "subskill": "exponential_functions", "count": 0 },
-          { "subskill": "statistics", "count": 0 },
-          { "subskill": "probability", "count": 0 },
-          { "subskill": "models_and_scatterplots", "count": 0 }
+          { "subskill": "percentages", "count": 0 },
+          { "subskill": "ratios_rates_and_proportional_relationships", "count": 0 },
+          { "subskill": "statistics", "count": 0 }
         ]
       },
       "items": [
-        { "subskill": "ratios_rates_and_proportional_relationships", "structure": "converting_units", "difficulty": "", "count": 0 },
-        { "subskill": "ratios_rates_and_proportional_relationships", "structure": "converting_square_units", "difficulty": "", "count": 0 },
+        { "subskill": "exponential_functions", "structure": "exponential_function_word_problem", "difficulty": "", "count": 0 },
+        { "subskill": "exponential_functions", "structure": "evaluating_exponential_functions", "difficulty": "", "count": 0 },
 
         { "subskill": "percentages", "structure": "applying_percentages", "difficulty": "", "count": 0 },
         { "subskill": "percentages", "structure": "percentage_increase_decrease", "difficulty": "", "count": 0 },
 
-        { "subskill": "exponential_functions", "structure": "evaluating_exponential_functions", "difficulty": "", "count": 0 },
-        { "subskill": "exponential_functions", "structure": "exponential_function_word_problem", "difficulty": "", "count": 0 },
+        { "subskill": "ratios_rates_and_proportional_relationships", "structure": "converting_units", "difficulty": "", "count": 0 },
+        { "subskill": "ratios_rates_and_proportional_relationships", "structure": "converting_square_units", "difficulty": "", "count": 0 },
 
-        { "subskill": "statistics", "structure": "mean_median_mode_range", "difficulty": "", "count": 0 },
-        { "subskill": "statistics", "structure": "standard_deviation", "difficulty": "", "count": 0 },
-        { "subskill": "statistics", "structure": "margin_of_error", "difficulty": "", "count": 0 },
-
-        { "subskill": "probability", "structure": "evaluating_probability", "difficulty": "", "count": 0 },
-        { "subskill": "probability", "structure": "evaluating_conditional_probability", "difficulty": "", "count": 0 },
-
-        { "subskill": "models_and_scatterplots", "structure": "identifying_model", "difficulty": "", "count": 0 },
-        { "subskill": "models_and_scatterplots", "structure": "evaluating_scatterplot", "difficulty": "", "count": 0 }
+        { "subskill": "statistics", "structure": "margin_of_error", "difficulty": "", "count": 0 }
       ]
     },
 
@@ -109,30 +94,14 @@
       "allocation": {
         "limit": 0,
         "subskills": [
-          { "subskill": "lines_angles_and_triangles", "count": 0 },
-          { "subskill": "right_triangles_and_trigonometry", "count": 0 },
-          { "subskill": "circles", "count": 0 },
-          { "subskill": "area_and_volume", "count": 0 }
+          { "subskill": "right_triangles_and_trigonometry", "count": 0 }
         ]
       },
       "items": [
-        { "subskill": "lines_angles_and_triangles", "structure": "parallel_lines_and_transversals", "difficulty": "", "count": 0 },
-        { "subskill": "lines_angles_and_triangles", "structure": "triangle_angle_sum_and_exterior_angles", "difficulty": "", "count": 0 },
-        { "subskill": "lines_angles_and_triangles", "structure": "triangle_similarity_and_congruence", "difficulty": "", "count": 0 },
-        { "subskill": "lines_angles_and_triangles", "structure": "identifying_angle_relationships", "difficulty": "", "count": 0 },
-
-        { "subskill": "right_triangles_and_trigonometry", "structure": "applying_pythagorean_theorem", "difficulty": "", "count": 0 },
         { "subskill": "right_triangles_and_trigonometry", "structure": "trig_ratios", "difficulty": "", "count": 0 },
-
-        { "subskill": "circles", "structure": "radius_diameter_circumference", "difficulty": "", "count": 0 },
-        { "subskill": "circles", "structure": "circle_equations_xy_plane", "difficulty": "", "count": 0 },
-        { "subskill": "circles", "structure": "central_and_inscribed_angles", "difficulty": "", "count": 0 },
-        { "subskill": "circles", "structure": "tangent_lines_and_slopes", "difficulty": "", "count": 0 },
-
-        { "subskill": "area_and_volume", "structure": "area_of_2d_figures", "difficulty": "", "count": 0 },
-        { "subskill": "area_and_volume", "structure": "volume_of_3d_figures", "difficulty": "", "count": 0 },
-        { "subskill": "area_and_volume", "structure": "surface_area", "difficulty": "", "count": 0 }
+        { "subskill": "right_triangles_and_trigonometry", "structure": "applying_pythagorean_theorem", "difficulty": "", "count": 0 }
       ]
     }
-  }
+  },
+  "updated_at": "1970-01-01T00:00:00Z"
 }
