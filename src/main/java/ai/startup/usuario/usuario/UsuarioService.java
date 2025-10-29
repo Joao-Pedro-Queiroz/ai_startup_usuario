@@ -85,7 +85,7 @@ public class UsuarioService {
         u.setNascimento(dto.nascimento());
         u.setEmail(dto.email() == null ? null : dto.email().toLowerCase());
         u.setSenhaHash(dto.senha() == null ? null : BCrypt.hashpw(dto.senha(), BCrypt.gensalt()));
-        u.setWins(0L);
+        u.setWins(5L);
         u.setStreaks(0L);
         u.setXp(0L);
         u.setPermissao("USER"); // <- força USER
