@@ -20,7 +20,11 @@ public class SecurityFilter extends OncePerRequestFilter {
     // rotas liberadas (sem token)
     private static final Set<String> PUBLIC_PATHS = Set.of(
         "/auth/login",
-        "/auth/register",          // <- novo: registro público
+        "/auth/register",          // <- registro público
+        "/auth/send-verification-code",   // <- verificação de email
+        "/auth/verify-email-code",        // <- verificação de email
+        "/auth/forgot-password",          // <- recuperação de senha
+        "/auth/reset-password",           // <- reset de senha
         "/v3/api-docs/**",
         "/swagger-ui/**",
         "/swagger-ui.html",

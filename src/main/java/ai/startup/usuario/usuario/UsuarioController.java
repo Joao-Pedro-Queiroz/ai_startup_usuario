@@ -41,7 +41,16 @@ public class UsuarioController {
         if (email == null || email.isBlank()) {
             return ResponseEntity.status(401).build();
         }
-        return ResponseEntity.ok(service.obterPorEmail(email));
+        
+        // Atualiza streak ao buscar /users/me
+        UsuarioDTO user = service.obterPorEmail(email);
+        if (user != null && user.id() != null) {
+            service.updateStreakOnLogin(user.id());
+            // Recarrega para pegar o streak atualizado
+            user = service.obterPorEmail(email);
+        }
+        
+        return ResponseEntity.ok(user);
     }
 
     // CRUD
@@ -78,5 +87,38 @@ public class UsuarioController {
     public ResponseEntity<Void> deletar(@PathVariable String id) {
         service.deletar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ===== PERFIL PÚBLICO E RANKING =====
+    
+    /**
+     * GET /users/{id}/public - Busca perfil público (filtrando dados privados)
+     */
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/users/{id}/public")
+    public ResponseEntity<PublicProfileDTO> getPublicProfile(@PathVariable String id) {
+        return ResponseEntity.ok(service.getPublicProfile(id));
+    }
+
+    /**
+     * GET /ranking/xp - Ranking de usuários por XP
+     */
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/ranking/xp")
+    public ResponseEntity<List<UsuarioDTO>> getRankingByXp(
+        @RequestParam(defaultValue = "50") int limit
+    ) {
+        return ResponseEntity.ok(service.getRankingByXp(limit));
+    }
+
+    /**
+     * GET /ranking/streak - Ranking de usuários por Streak
+     */
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/ranking/streak")
+    public ResponseEntity<List<UsuarioDTO>> getRankingByStreak(
+        @RequestParam(defaultValue = "50") int limit
+    ) {
+        return ResponseEntity.ok(service.getRankingByStreak(limit));
     }
 }

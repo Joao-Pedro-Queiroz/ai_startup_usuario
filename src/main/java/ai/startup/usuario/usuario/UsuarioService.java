@@ -8,12 +8,17 @@ import ai.startup.usuario.plano.UserPlan;
 import ai.startup.usuario.plano.UserPlanMapper;
 import ai.startup.usuario.plano.UserPlanRepository;
 import ai.startup.usuario.support.TemplateLoader;
+import ai.startup.usuario.privacy.ProfilePrivacy;
+import ai.startup.usuario.privacy.ProfilePrivacyRepository;
+import ai.startup.usuario.badge.BadgeRepository;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class UsuarioService {
@@ -25,17 +30,59 @@ public class UsuarioService {
     private final PerfilClient perfilClient;
     private final TemplateLoader templateLoader;
     private final UserPlanRepository userPlanRepo;
+    private final ProfilePrivacyRepository privacyRepo;
+    private final BadgeRepository badgeRepo;
 
     public UsuarioService(UsuarioRepository repo,
                           JwtService jwt,
                           PerfilClient perfilClient,
                           TemplateLoader templateLoader,
-                          UserPlanRepository userPlanRepo) {
+                          UserPlanRepository userPlanRepo,
+                          ProfilePrivacyRepository privacyRepo,
+                          BadgeRepository badgeRepo) {
         this.repo = repo;
         this.jwt = jwt;
         this.perfilClient = perfilClient;
         this.templateLoader = templateLoader;
         this.userPlanRepo = userPlanRepo;
+        this.privacyRepo = privacyRepo;
+        this.badgeRepo = badgeRepo;
+    }
+    
+    /**
+     * Atualiza o streak do usuário baseado no login diário
+     */
+    public Long updateStreakOnLogin(String userId) {
+        Usuario user = repo.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+        
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate lastLogin = user.getUltimoLogin();
+        Long currentStreak = user.getStreaks() != null ? user.getStreaks() : 0L;
+        
+        if (lastLogin == null) {
+            // Primeiro login
+            user.setStreaks(1L);
+            user.setUltimoLogin(today);
+        } else {
+            long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(lastLogin, today);
+            
+            if (daysBetween == 0) {
+                // Mesmo dia - mantém streak
+                return currentStreak;
+            } else if (daysBetween == 1) {
+                // Login consecutivo - incrementa streak
+                user.setStreaks(currentStreak + 1);
+                user.setUltimoLogin(today);
+            } else {
+                // Quebrou o streak - reseta para 1
+                user.setStreaks(1L);
+                user.setUltimoLogin(today);
+            }
+        }
+        
+        Usuario saved = repo.save(user);
+        return saved.getStreaks();
     }
 
     public UsuarioDTO criar(UsuarioCreateDTO dto) {
@@ -191,6 +238,84 @@ public class UsuarioService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado.");
         }
         repo.deleteById(id);
+    }
+
+    /**
+     * Reseta a senha de um usuário (usado na recuperação de senha)
+     */
+    public void resetPassword(String userId, String newPassword) {
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nova senha é obrigatória");
+        }
+        
+        Usuario u = repo.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+        
+        u.setSenhaHash(BCrypt.hashpw(newPassword, BCrypt.gensalt()));
+        repo.save(u);
+    }
+
+    /**
+     * Busca perfil público de um usuário (filtrando dados privados)
+     */
+    public PublicProfileDTO getPublicProfile(String userId) {
+        Usuario u = repo.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+        
+        // Busca configurações de privacidade (usa padrão se não existir)
+        ProfilePrivacy privacy = privacyRepo.findByUserId(userId)
+                .orElse(ProfilePrivacy.createDefault(userId));
+        
+        // Busca badges conquistados se públicos
+        List<String> badgeIds = new ArrayList<>();
+        if (privacy.getBadgesPublic()) {
+            badgeIds = badgeRepo.findByUserIdAndEarnedAtIsNotNull(userId)
+                    .stream()
+                    .map(b -> b.getBadgeId())
+                    .toList();
+        }
+        
+        return new PublicProfileDTO(
+                u.getId(),
+                u.getNome(),
+                u.getSobrenome(),
+                privacy.getEmailPublic() ? u.getEmail() : null,
+                privacy.getTelefonePublic() ? u.getTelefone() : null,
+                privacy.getWinsPublic() ? u.getWins() : null,
+                privacy.getStreaksPublic() ? u.getStreaks() : null,
+                privacy.getXpPublic() ? u.getXp() : null,
+                null, // bestScore calculado no frontend
+                null, // simuladosCount calculado no frontend
+                badgeIds
+        );
+    }
+
+    /**
+     * Busca ranking de usuários ordenados por XP ou Streak
+     */
+    public List<UsuarioDTO> getRankingByXp(int limit) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "xp", "streaks");
+        List<Usuario> users = repo.findAll(sort);
+        
+        // Limita e converte para DTO
+        return users.stream()
+                .limit(limit > 0 ? limit : 100) // Max 100
+                .map(this::toDTO)
+                .toList();
+    }
+
+    /**
+     * Busca ranking de usuários ordenados por Streak
+     */
+    public List<UsuarioDTO> getRankingByStreak(int limit) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "streaks", "xp");
+        List<Usuario> users = repo.findAll(sort);
+        
+        // Limita e converte para DTO
+        return users.stream()
+                .limit(limit > 0 ? limit : 100) // Max 100
+                .map(this::toDTO)
+                .toList();
     }
 
     // helpers

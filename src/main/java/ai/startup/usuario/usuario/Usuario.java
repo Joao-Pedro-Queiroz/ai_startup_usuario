@@ -26,4 +26,5 @@ public class Usuario {
     private Long streaks;
     private Long xp;
     private String permissao;   // USER | ADMIN
+    private LocalDate ultimoLogin; // Data do último login para cálculo de streak
 }
