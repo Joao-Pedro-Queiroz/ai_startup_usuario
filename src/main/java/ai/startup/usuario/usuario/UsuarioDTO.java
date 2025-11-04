@@ -13,5 +13,8 @@ public record UsuarioDTO(
         Long wins,
         Long streaks,
         Long xp,
-        String permissao
+        String permissao,
+        Boolean isPremium,
+        Boolean extendedTime,
+        String selectedPractice
 ) {}

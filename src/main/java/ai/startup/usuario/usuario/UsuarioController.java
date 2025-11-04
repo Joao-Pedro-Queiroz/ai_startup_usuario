@@ -89,6 +89,19 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * POST /users/me/upgrade-premium - Faz upgrade para premium (custa 100 wins)
+     */
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/users/me/upgrade-premium")
+    public ResponseEntity<UsuarioDTO> upgradePremium(HttpServletRequest req) {
+        String email = (String) req.getAttribute("authEmail");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(service.upgradeToPremium(email));
+    }
+
     // ===== PERFIL PÚBLICO E RANKING =====
     
     /**

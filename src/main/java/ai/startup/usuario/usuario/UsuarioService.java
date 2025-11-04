@@ -108,6 +108,9 @@ public class UsuarioService {
         u.setStreaks(0L);
         u.setXp(0L);
         u.setPermissao(dto.permissao() == null ? "USER" : dto.permissao().toUpperCase());
+        u.setIsPremium(false); // Novo usuário começa como não-premium
+        u.setExtendedTime(false); // Padrão: sem tempo estendido
+        u.setSelectedPractice(null); // Ainda não selecionou uma prática
 
         return toDTO(repo.save(u));
     }
@@ -136,6 +139,9 @@ public class UsuarioService {
         u.setStreaks(0L);
         u.setXp(0L);
         u.setPermissao("USER"); // <- força USER
+        u.setIsPremium(false); // Novo usuário começa como não-premium
+        u.setExtendedTime(false); // Padrão: sem tempo estendido
+        u.setSelectedPractice(null); // Ainda não selecionou uma prática
 
         Usuario salvo = repo.save(u);
 
@@ -222,6 +228,8 @@ public class UsuarioService {
         if (dto.wins() != null) u.setWins(dto.wins());
         if (dto.streaks() != null) u.setStreaks(dto.streaks());
         if (dto.xp() != null) u.setXp(dto.xp());
+        if (dto.extendedTime() != null) u.setExtendedTime(dto.extendedTime());
+        if (dto.selectedPractice() != null) u.setSelectedPractice(dto.selectedPractice());
 
         if (dto.permissao() != null) {
             if (!"ADMIN".equalsIgnoreCase(authPermissao)) {
@@ -318,6 +326,32 @@ public class UsuarioService {
                 .toList();
     }
 
+    /**
+     * Faz upgrade para premium (custa 100 wins)
+     */
+    public UsuarioDTO upgradeToPremium(String email) {
+        Usuario user = repo.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+        
+        // Verifica se já é premium
+        if (user.getIsPremium() != null && user.getIsPremium()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuário já é premium");
+        }
+        
+        // Verifica se tem saldo suficiente (100 wins)
+        long currentWins = user.getWins() != null ? user.getWins() : 0L;
+        if (currentWins < 100L) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Saldo insuficiente. Necessário: 100 wins. Atual: " + currentWins + " wins");
+        }
+        
+        // Debita 100 wins e ativa premium
+        user.setWins(currentWins - 100L);
+        user.setIsPremium(true);
+        
+        return toDTO(repo.save(user));
+    }
+
     // helpers
     private String normalizarCpf(String cpf) {
         return cpf == null ? null : cpf.replaceAll("\\D+", "");
@@ -325,7 +359,10 @@ public class UsuarioService {
     private UsuarioDTO toDTO(Usuario u) {
         return new UsuarioDTO(
                 u.getId(), u.getNome(), u.getSobrenome(), u.getCpf(), u.getTelefone(),
-                u.getNascimento(), u.getEmail(), u.getWins(), u.getStreaks(), u.getXp(), u.getPermissao()
+                u.getNascimento(), u.getEmail(), u.getWins(), u.getStreaks(), u.getXp(), u.getPermissao(),
+                u.getIsPremium() != null ? u.getIsPremium() : false,
+                u.getExtendedTime() != null ? u.getExtendedTime() : false,
+                u.getSelectedPractice()
         );
     }
 }
