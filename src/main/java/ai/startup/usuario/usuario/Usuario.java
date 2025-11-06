@@ -26,4 +26,8 @@ public class Usuario {
     private Long streaks;
     private Long xp;
     private String permissao;   // USER | ADMIN
+    private LocalDate ultimoLogin; // Data do último login para cálculo de streak
+    private Boolean isPremium;  // true se usuário tem acesso premium
+    private Boolean extendedTime; // true se usuário tem direito a tempo estendido (53 min ao invés de 35 min)
+    private String selectedPractice; // prática selecionada pelo usuário (ex: "SAT_MATH", null se ainda não selecionou)
 }
