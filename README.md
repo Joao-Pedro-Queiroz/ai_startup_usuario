@@ -146,7 +146,7 @@ ai_startup_usuario/
 │  │  ├─ UsuarioCreateDTO.java
 │  │  └─ UsuarioUpdateDTO.java
 │  │
-│  ├─ plano/
+│  ├─ perfil/
 │  │  ├─ PerfilClient.java
 │  │
 │  ├─ plano/
