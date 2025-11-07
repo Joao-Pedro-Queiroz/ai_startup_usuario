@@ -230,6 +230,7 @@ public class UsuarioService {
         if (dto.xp() != null) u.setXp(dto.xp());
         if (dto.extendedTime() != null) u.setExtendedTime(dto.extendedTime());
         if (dto.selectedPractice() != null) u.setSelectedPractice(dto.selectedPractice());
+        if (dto.selectedPractices() != null) u.setSelectedPractices(dto.selectedPractices());
 
         if (dto.permissao() != null) {
             if (!"ADMIN".equalsIgnoreCase(authPermissao)) {
@@ -362,7 +363,8 @@ public class UsuarioService {
                 u.getNascimento(), u.getEmail(), u.getWins(), u.getStreaks(), u.getXp(), u.getPermissao(),
                 u.getIsPremium() != null ? u.getIsPremium() : false,
                 u.getExtendedTime() != null ? u.getExtendedTime() : false,
-                u.getSelectedPractice()
+                u.getSelectedPractice(),
+                u.getSelectedPractices() != null ? u.getSelectedPractices() : java.util.Collections.emptyList()
         );
     }
 }

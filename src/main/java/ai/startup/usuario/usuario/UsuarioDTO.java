@@ -1,6 +1,7 @@
 package ai.startup.usuario.usuario;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record UsuarioDTO(
         String id,
@@ -16,5 +17,6 @@ public record UsuarioDTO(
         String permissao,
         Boolean isPremium,
         Boolean extendedTime,
-        String selectedPractice
+        String selectedPractice,
+        List<String> selectedPractices
 ) {}

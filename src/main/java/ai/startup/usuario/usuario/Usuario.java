@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data                       // gera getters, setters, equals, hashCode, toString
 @NoArgsConstructor          // construtor vazio
@@ -29,5 +30,6 @@ public class Usuario {
     private LocalDate ultimoLogin; // Data do último login para cálculo de streak
     private Boolean isPremium;  // true se usuário tem acesso premium
     private Boolean extendedTime; // true se usuário tem direito a tempo estendido (53 min ao invés de 35 min)
-    private String selectedPractice; // prática selecionada pelo usuário (ex: "SAT_MATH", null se ainda não selecionou)
+    private String selectedPractice; // prática selecionada pelo usuário (ex: "SAT_MATH", null se ainda não selecionou) - DEPRECATED: use selectedPractices
+    private List<String> selectedPractices; // lista de práticas ativas do usuário (ex: ["sat-math", "sat-reading"])
 }
