@@ -2,7 +2,9 @@ package ai.startup.usuario.usuario;
 
 import ai.startup.usuario.auth.AuthRequestDTO;
 import ai.startup.usuario.auth.AuthResponseDTO;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,14 +26,46 @@ public class UsuarioController {
     // AUTH
     @Operation(security = {})  
     @PostMapping("/auth/login")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO req) {
-        return ResponseEntity.ok(service.autenticar(req));
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO req, HttpServletResponse response) {
+        AuthResponseDTO authResponse = service.autenticar(req);
+        setJwtCookie(response, authResponse.token());
+        return ResponseEntity.ok(authResponse);
     }
 
     @Operation(security = {}) // público na UI do Swagger
     @PostMapping("/auth/register")
-    public ResponseEntity<AuthResponseDTO> register(@RequestBody UsuarioCreateDTO dto) {
-        return ResponseEntity.ok(service.registrar(dto));
+    public ResponseEntity<AuthResponseDTO> register(@RequestBody UsuarioCreateDTO dto, HttpServletResponse response) {
+        AuthResponseDTO authResponse = service.registrar(dto);
+        setJwtCookie(response, authResponse.token());
+        return ResponseEntity.ok(authResponse);
+    }
+
+    @Operation(security = {})
+    @PostMapping("/auth/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        clearJwtCookie(response);
+        return ResponseEntity.ok().build();
+    }
+
+    // Helper method to set JWT cookie
+    private void setJwtCookie(HttpServletResponse response, String token) {
+        Cookie cookie = new Cookie("jwt", token);
+        cookie.setHttpOnly(true);  // Proteção contra XSS
+        cookie.setSecure(false);   // Mudar para true em produção com HTTPS
+        cookie.setPath("/");
+        cookie.setMaxAge(6 * 60 * 60); // 6 horas (mesmo tempo do token)
+        // SameSite=Lax deve ser configurado via header Set-Cookie no nginx/proxy
+        response.addCookie(cookie);
+    }
+
+    // Helper method to clear JWT cookie
+    private void clearJwtCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie("jwt", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);   // Mudar para true em produção
+        cookie.setPath("/");
+        cookie.setMaxAge(0);       // Expira imediatamente
+        response.addCookie(cookie);
     }
 
     @SecurityRequirement(name = "bearerAuth")
