@@ -353,6 +353,22 @@ public class UsuarioService {
         return toDTO(repo.save(user));
     }
 
+    /**
+     * Atualiza wins diretamente (para correção de duplicação)
+     */
+    public UsuarioDTO updateWinsDirect(String email, long newWins) {
+        Usuario user = repo.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+        
+        long oldWins = user.getWins() != null ? user.getWins() : 0L;
+        user.setWins(newWins);
+        repo.save(user);
+        
+        System.out.println("[Usuario] Wins corrigidos manualmente: " + oldWins + " → " + newWins + " (usuário: " + email + ")");
+        
+        return toDTO(user);
+    }
+
     // helpers
     private String normalizarCpf(String cpf) {
         return cpf == null ? null : cpf.replaceAll("\\D+", "");

@@ -15,6 +15,7 @@ import java.util.Map;
 public class PaymentService {
 
     private final UsuarioRepository usuarioRepository;
+    private final ProcessedPaymentRepository processedPaymentRepository;
 
     @Value("${stripe.webhook.secret}")
     private String webhookSecret;
@@ -42,8 +43,9 @@ public class PaymentService {
         ));
     }
 
-    public PaymentService(UsuarioRepository usuarioRepository) {
+    public PaymentService(UsuarioRepository usuarioRepository, ProcessedPaymentRepository processedPaymentRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.processedPaymentRepository = processedPaymentRepository;
     }
 
     /**
@@ -64,6 +66,15 @@ public class PaymentService {
         // Buscar usuário para obter o ID
         Usuario user = usuarioRepository.findByEmail(userEmail)
             .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        // Validar email antes de enviar para o Stripe
+        if (!isValidEmail(userEmail)) {
+            System.out.println("[Payment] ❌ Email inválido detectado: " + userEmail);
+            throw new IllegalArgumentException(
+                "Email inválido: " + userEmail + 
+                ". Por favor, atualize seu email no perfil antes de fazer uma compra."
+            );
+        }
 
         SessionCreateParams.Builder builder = SessionCreateParams.builder()
             .setMode(product.isSubscription ? 
@@ -129,36 +140,89 @@ public class PaymentService {
      * Processa pagamento bem-sucedido
      */
     public void handleSuccessfulPayment(String sessionId) throws StripeException {
+        System.out.println("[Payment] ========================================");
+        System.out.println("[Payment] Processando pagamento para sessão: " + sessionId);
+        
+        // Verificar se já foi processado no banco (evitar duplicação)
+        if (processedPaymentRepository.existsBySessionId(sessionId)) {
+            System.out.println("[Payment] ⚠️⚠️⚠️ DUPLICAÇÃO DETECTADA! ⚠️⚠️⚠️");
+            System.out.println("[Payment] Sessão " + sessionId + " já foi processada anteriormente!");
+            System.out.println("[Payment] IGNORANDO para evitar adicionar wins duplicados.");
+            System.out.println("[Payment] ========================================");
+            return;
+        }
+        
         Session session = Session.retrieve(sessionId);
+        System.out.println("[Payment] Sessão recuperada do Stripe: " + session.getId());
+        System.out.println("[Payment] Status da sessão: " + session.getPaymentStatus());
         
         String userId = session.getMetadata().get("userId");
         String productId = session.getMetadata().get("productId");
         
+        System.out.println("[Payment] Metadata - userId: " + userId + ", productId: " + productId);
+        
         if (userId == null || productId == null) {
+            System.err.println("[Payment] ERRO: Metadata inválida na sessão");
             throw new IllegalArgumentException("Metadata inválida na sessão");
         }
 
         Usuario user = usuarioRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + userId));
+            .orElseThrow(() -> {
+                System.err.println("[Payment] ERRO: Usuário não encontrado: " + userId);
+                return new IllegalArgumentException("Usuário não encontrado: " + userId);
+            });
+
+        System.out.println("[Payment] Usuário encontrado: " + user.getEmail() + " (wins atuais: " + user.getWins() + ")");
 
         ProductInfo product = PRODUCTS.get(productId);
         if (product == null) {
+            System.err.println("[Payment] ERRO: Produto não encontrado: " + productId);
             throw new IllegalArgumentException("Produto não encontrado: " + productId);
         }
+
+        System.out.println("[Payment] Produto: " + product.name + " (wins: " + product.wins + ", subscription: " + product.isSubscription + ")");
 
         if (product.isSubscription) {
             // Ativar assinatura BrainWin Learn
             user.setIsPremium(true);
-            // Aqui você pode adicionar campos extras para rastrear a assinatura
-            System.out.println("[Payment] Assinatura ativada para usuário: " + user.getEmail());
+            System.out.println("[Payment] ✅ Assinatura ativada para usuário: " + user.getEmail());
         } else {
             // Adicionar wins
             long currentWins = user.getWins() != null ? user.getWins() : 0L;
-            user.setWins(currentWins + product.wins);
-            System.out.println("[Payment] " + product.wins + " wins adicionados para usuário: " + user.getEmail());
+            long newWins = currentWins + product.wins;
+            user.setWins(newWins);
+            System.out.println("[Payment] ✅ Wins atualizados: " + currentWins + " → " + newWins + " (+" + product.wins + ")");
         }
 
         usuarioRepository.save(user);
+        System.out.println("[Payment] ✅ Usuário salvo no banco de dados com sucesso!");
+        
+        // Marcar sessão como processada NO BANCO (persistente)
+        ProcessedPayment processedPayment = new ProcessedPayment(sessionId, userId, productId);
+        processedPaymentRepository.save(processedPayment);
+        System.out.println("[Payment] 🔒 Sessão salva no banco como processada (proteção permanente contra duplicação)");
+        
+        // Verificar se foi salvo corretamente
+        Usuario userVerify = usuarioRepository.findById(userId).orElse(null);
+        if (userVerify != null) {
+            System.out.println("[Payment] ✅ VERIFICAÇÃO FINAL: Usuário " + userVerify.getEmail() + " agora tem " + userVerify.getWins() + " wins");
+        }
+        
+        long totalProcessed = processedPaymentRepository.count();
+        System.out.println("[Payment] 📊 Total de pagamentos processados no sistema: " + totalProcessed);
+        System.out.println("[Payment] ========================================");
+    }
+
+    /**
+     * Valida formato de email
+     */
+    private boolean isValidEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+        // Regex simples para validação de email
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        return email.matches(emailRegex);
     }
 
     // Classe interna para info de produtos

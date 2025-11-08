@@ -168,4 +168,20 @@ public class UsuarioController {
     ) {
         return ResponseEntity.ok(service.getRankingByStreak(limit));
     }
+
+    /**
+     * PUT /users/me/correct-wins - Corrige wins para o valor correto (debug)
+     */
+    @SecurityRequirement(name = "bearerAuth")
+    @PutMapping("/users/me/correct-wins")
+    public ResponseEntity<UsuarioDTO> correctWins(
+        @RequestParam long correctAmount,
+        HttpServletRequest req
+    ) {
+        String email = (String) req.getAttribute("authEmail");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(service.updateWinsDirect(email, correctAmount));
+    }
 }
