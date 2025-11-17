@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.time.LocalDate;
 
 @Service
 public class UsuarioService {
@@ -96,6 +97,9 @@ public class UsuarioService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado.");
         }
 
+        // Validação da data de nascimento (anos válidos)
+        validarNascimento(dto.nascimento());
+
         Usuario u = new Usuario();
         u.setNome(dto.nome());
         u.setSobrenome(dto.sobrenome());
@@ -126,6 +130,9 @@ public class UsuarioService {
         if (dto.cpf() != null && repo.existsByCpf(normalizarCpf(dto.cpf()))) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado.");
         }
+
+        // Validação da data de nascimento (anos válidos)
+        validarNascimento(dto.nascimento());
 
         Usuario u = new Usuario();
         u.setNome(dto.nome());
@@ -221,7 +228,10 @@ public class UsuarioService {
         if (dto.nome() != null) u.setNome(dto.nome());
         if (dto.sobrenome() != null) u.setSobrenome(dto.sobrenome());
         if (dto.telefone() != null) u.setTelefone(dto.telefone());
-        if (dto.nascimento() != null) u.setNascimento(dto.nascimento());
+        if (dto.nascimento() != null) {
+            validarNascimento(dto.nascimento());
+            u.setNascimento(dto.nascimento());
+        }
         if (dto.email() != null) u.setEmail(dto.email().toLowerCase());
         if (dto.cpf() != null) u.setCpf(normalizarCpf(dto.cpf()));
         if (dto.senha() != null) u.setSenhaHash(BCrypt.hashpw(dto.senha(), BCrypt.gensalt()));
@@ -372,6 +382,25 @@ public class UsuarioService {
     // helpers
     private String normalizarCpf(String cpf) {
         return cpf == null ? null : cpf.replaceAll("\\D+", "");
+    }
+    private void validarNascimento(LocalDate nascimento) {
+        if (nascimento == null) return; // opcional
+        int year = nascimento.getYear();
+        int currentYear = LocalDate.now().getYear();
+        int minYear = 1900;
+        if (year < minYear || year > currentYear) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Ano de nascimento inválido. Use um ano entre " + minYear + " e " + currentYear + "."
+            );
+        }
+        // também impedir datas futuras
+        if (nascimento.isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Data de nascimento não pode ser no futuro."
+            );
+        }
     }
     private UsuarioDTO toDTO(Usuario u) {
         return new UsuarioDTO(
