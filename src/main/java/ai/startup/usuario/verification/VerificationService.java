@@ -1,5 +1,6 @@
 package ai.startup.usuario.verification;
 
+import ai.startup.usuario.email.EmailService;
 import ai.startup.usuario.usuario.Usuario;
 import ai.startup.usuario.usuario.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -19,6 +21,9 @@ public class VerificationService {
     
     @Autowired
     private UsuarioRepository usuarioRepo;
+    
+    @Autowired
+    private EmailService emailService;
     
     private static final int EXPIRATION_MINUTES = 15;
     
@@ -60,13 +65,15 @@ public class VerificationService {
         
         codeRepo.save(vc);
         
-        // TODO: Integrar com serviço de email (SendGrid, AWS SES, etc)
-        // Por enquanto, vamos apenas logar o código no console para desenvolvimento
-        System.out.println("==================================");
-        System.out.println("📧 Código de verificação para: " + email);
-        System.out.println("🔐 Código: " + vc.getCode());
-        System.out.println("⏰ Expira em: " + EXPIRATION_MINUTES + " minutos");
-        System.out.println("==================================");
+        // Envia email com código de verificação
+        try {
+            emailService.sendVerificationCode(email, vc.getCode());
+            System.out.println("✅ Email de verificação enviado para: " + email);
+        } catch (IOException e) {
+            System.err.println("❌ Erro ao enviar email de verificação: " + e.getMessage());
+            // Não lança exceção para não quebrar o fluxo, mas loga o erro
+            // O código já foi salvo no banco, então o usuário pode tentar novamente
+        }
     }
     
     /**
@@ -131,12 +138,15 @@ public class VerificationService {
         
         codeRepo.save(vc);
         
-        // TODO: Integrar com serviço de email
-        System.out.println("==================================");
-        System.out.println("🔐 Código de recuperação de senha para: " + email);
-        System.out.println("🔑 Código: " + vc.getCode());
-        System.out.println("⏰ Expira em: " + EXPIRATION_MINUTES + " minutos");
-        System.out.println("==================================");
+        // Envia email com código de recuperação de senha
+        try {
+            emailService.sendPasswordResetCode(email, vc.getCode());
+            System.out.println("✅ Email de recuperação de senha enviado para: " + email);
+        } catch (IOException e) {
+            System.err.println("❌ Erro ao enviar email de recuperação: " + e.getMessage());
+            // Não lança exceção para não quebrar o fluxo, mas loga o erro
+            // O código já foi salvo no banco, então o usuário pode tentar novamente
+        }
     }
     
     /**

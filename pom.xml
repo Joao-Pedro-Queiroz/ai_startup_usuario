@@ -87,6 +87,12 @@
 		<artifactId>stripe-java</artifactId>
 		<version>26.12.0</version>
 	</dependency>
+	<!-- SendGrid para envio de emails -->
+	<dependency>
+		<groupId>com.sendgrid</groupId>
+		<artifactId>sendgrid-java</artifactId>
+		<version>4.9.3</version>
+	</dependency>
 	</dependencies>
 
 	<build>
