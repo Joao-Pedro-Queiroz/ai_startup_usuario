@@ -33,10 +33,10 @@ public class PaymentService {
             false // não é assinatura
         ));
 
-        // BrainWin Learn - R$ 59,90/mês
+        // BrainWin Learn - R$ 99,99/mês
         PRODUCTS.put("brainwin-learn", new ProductInfo(
             "BrainWin Learn - Assinatura Mensal",
-            5990L, // 59.90 em centavos
+            9999L, // 99.99 em centavos
             "brl",
             0,  // não dá wins
             true // é assinatura
