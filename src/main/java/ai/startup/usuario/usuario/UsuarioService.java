@@ -4,6 +4,7 @@ import ai.startup.usuario.auth.AuthRequestDTO;
 import ai.startup.usuario.auth.AuthResponseDTO;
 import ai.startup.usuario.auth.JwtService;
 import ai.startup.usuario.clients.PerfilClient;
+import ai.startup.usuario.clients.QuestaoClient;
 import ai.startup.usuario.plano.UserPlan;
 import ai.startup.usuario.plano.UserPlanMapper;
 import ai.startup.usuario.plano.UserPlanRepository;
@@ -29,6 +30,7 @@ public class UsuarioService {
 
     // NOVO: dependências para provisionar perfil e salvar plano localmente
     private final PerfilClient perfilClient;
+    private final QuestaoClient questaoClient;
     private final TemplateLoader templateLoader;
     private final UserPlanRepository userPlanRepo;
     private final ProfilePrivacyRepository privacyRepo;
@@ -37,6 +39,7 @@ public class UsuarioService {
     public UsuarioService(UsuarioRepository repo,
                           JwtService jwt,
                           PerfilClient perfilClient,
+                          QuestaoClient questaoClient,
                           TemplateLoader templateLoader,
                           UserPlanRepository userPlanRepo,
                           ProfilePrivacyRepository privacyRepo,
@@ -44,6 +47,7 @@ public class UsuarioService {
         this.repo = repo;
         this.jwt = jwt;
         this.perfilClient = perfilClient;
+        this.questaoClient = questaoClient;
         this.templateLoader = templateLoader;
         this.userPlanRepo = userPlanRepo;
         this.privacyRepo = privacyRepo;
@@ -190,7 +194,7 @@ public class UsuarioService {
         }
 
         Usuario u = repo.findByEmail(dto.email().toLowerCase())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "E-mail não encontrado. Tente novamente ou crie uma conta."));
 
         if (u.getSenhaHash() == null || !BCrypt.checkpw(dto.senha(), u.getSenhaHash())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas.");
@@ -377,6 +381,58 @@ public class UsuarioService {
         System.out.println("[Usuario] Wins corrigidos manualmente: " + oldWins + " → " + newWins + " (usuário: " + email + ")");
         
         return toDTO(user);
+    }
+
+    /**
+     * Calcula e atualiza XP de um usuário baseado nas questões respondidas corretamente
+     * XP = número de questões corretas * 10 (pode ajustar o multiplicador)
+     */
+    public UsuarioDTO recalculateXp(String userId, String bearerToken) {
+        Usuario user = repo.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+        
+        try {
+            long correctAnswers = questaoClient.countCorrectAnswers(bearerToken, userId);
+            long newXp = correctAnswers * 10L; // 10 XP por questão correta
+            
+            long oldXp = user.getXp() != null ? user.getXp() : 0L;
+            user.setXp(newXp);
+            repo.save(user);
+            
+            System.out.println("[Usuario] XP recalculado para usuário " + userId + ": " + oldXp + " → " + newXp + " (questões corretas: " + correctAnswers + ")");
+            
+            return toDTO(user);
+        } catch (Exception e) {
+            System.err.println("[Usuario] Erro ao recalcular XP para usuário " + userId + ": " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erro ao recalcular XP: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Recalcula XP de todos os usuários (endpoint administrativo)
+     */
+    public int recalculateAllXp(String bearerToken) {
+        List<Usuario> allUsers = repo.findAll();
+        int updated = 0;
+        
+        for (Usuario user : allUsers) {
+            try {
+                long correctAnswers = questaoClient.countCorrectAnswers(bearerToken, user.getId());
+                long newXp = correctAnswers * 10L;
+                
+                user.setXp(newXp);
+                repo.save(user);
+                updated++;
+                
+                System.out.println("[Usuario] XP atualizado para " + user.getEmail() + ": " + newXp + " (questões corretas: " + correctAnswers + ")");
+            } catch (Exception e) {
+                System.err.println("[Usuario] Erro ao recalcular XP para " + user.getEmail() + ": " + e.getMessage());
+            }
+        }
+        
+        System.out.println("[Usuario] XP recalculado para " + updated + " usuários");
+        return updated;
     }
 
     // helpers

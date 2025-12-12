@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping
@@ -183,5 +184,50 @@ public class UsuarioController {
             return ResponseEntity.status(401).build();
         }
         return ResponseEntity.ok(service.updateWinsDirect(email, correctAmount));
+    }
+
+    /**
+     * POST /users/{id}/recalculate-xp - Recalcula XP de um usuário específico
+     */
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/users/{id}/recalculate-xp")
+    public ResponseEntity<UsuarioDTO> recalculateXp(
+        @PathVariable String id,
+        HttpServletRequest req
+    ) {
+        String bearerToken = extractBearerToken(req);
+        if (bearerToken == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(service.recalculateXp(id, bearerToken));
+    }
+
+    /**
+     * POST /admin/recalculate-all-xp - Recalcula XP de todos os usuários (administrativo)
+     */
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/admin/recalculate-all-xp")
+    public ResponseEntity<Map<String, Object>> recalculateAllXp(HttpServletRequest req) {
+        String bearerToken = extractBearerToken(req);
+        if (bearerToken == null) {
+            return ResponseEntity.status(401).build();
+        }
+        
+        int updated = service.recalculateAllXp(bearerToken);
+        return ResponseEntity.ok(java.util.Map.of(
+            "message", "XP recalculado para " + updated + " usuários",
+            "updated_count", updated
+        ));
+    }
+
+    /**
+     * Extrai o token Bearer do header Authorization
+     */
+    private String extractBearerToken(HttpServletRequest req) {
+        String authHeader = req.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
     }
 }
