@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/payments")
@@ -75,6 +76,22 @@ public class PaymentController {
         } catch (Exception e) {
             System.err.println("[Payment] Erro ao processar sucesso: " + e.getMessage());
             return ResponseEntity.status(500).body("Erro ao processar pagamento");
+        }
+    }
+
+    /**
+     * GET /payments/history/{userId}
+     * Lista todas as compras de um usuário
+     */
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/history/{userId}")
+    public ResponseEntity<List<PaymentHistoryDTO>> getUserPaymentHistory(@PathVariable String userId) {
+        try {
+            List<PaymentHistoryDTO> history = paymentService.getUserPaymentHistory(userId);
+            return ResponseEntity.ok(history);
+        } catch (Exception e) {
+            System.err.println("[Payment] Erro ao buscar histórico: " + e.getMessage());
+            return ResponseEntity.status(500).build();
         }
     }
 

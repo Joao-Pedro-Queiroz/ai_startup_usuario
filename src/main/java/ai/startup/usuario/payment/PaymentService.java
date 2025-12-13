@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class PaymentService {
@@ -211,6 +213,43 @@ public class PaymentService {
         long totalProcessed = processedPaymentRepository.count();
         System.out.println("[Payment] 📊 Total de pagamentos processados no sistema: " + totalProcessed);
         System.out.println("[Payment] ========================================");
+    }
+
+    /**
+     * Busca histórico de compras de um usuário
+     */
+    public List<PaymentHistoryDTO> getUserPaymentHistory(String userId) {
+        List<ProcessedPayment> payments = processedPaymentRepository.findByUserIdOrderByProcessedAtDesc(userId);
+        
+        return payments.stream()
+            .map(payment -> {
+                ProductInfo product = PRODUCTS.get(payment.getProductId());
+                if (product == null) {
+                    // Produto não encontrado (pode ter sido removido)
+                    return new PaymentHistoryDTO(
+                        payment.getSessionId(),
+                        payment.getProductId(),
+                        "Produto não encontrado",
+                        null,
+                        null,
+                        null,
+                        null,
+                        payment.getProcessedAt()
+                    );
+                }
+                
+                return new PaymentHistoryDTO(
+                    payment.getSessionId(),
+                    payment.getProductId(),
+                    product.name,
+                    product.priceInCents,
+                    product.currency,
+                    product.wins,
+                    product.isSubscription,
+                    payment.getProcessedAt()
+                );
+            })
+            .collect(Collectors.toList());
     }
 
     /**
