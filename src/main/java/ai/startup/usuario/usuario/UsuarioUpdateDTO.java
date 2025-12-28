@@ -9,6 +9,7 @@ public record UsuarioUpdateDTO(
         String telefone,
         LocalDate nascimento,
         String email,
+        String language,
         String cpf,
         String senha,
         Long wins,

@@ -10,5 +10,6 @@ public record UsuarioCreateDTO(
         LocalDate nascimento,
         String email,
         String senha,
-        String permissao
+        String permissao,
+        String language
 ) {}

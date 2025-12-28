@@ -111,6 +111,7 @@ public class UsuarioService {
         u.setTelefone(dto.telefone());
         u.setNascimento(dto.nascimento());
         u.setEmail(dto.email() == null ? null : dto.email().toLowerCase());
+        u.setLanguage(dto.language());
         u.setSenhaHash(dto.senha() == null ? null : BCrypt.hashpw(dto.senha(), BCrypt.gensalt()));
         u.setWins(5L);
         u.setStreaks(0L);
@@ -145,6 +146,7 @@ public class UsuarioService {
         u.setTelefone(dto.telefone());
         u.setNascimento(dto.nascimento());
         u.setEmail(dto.email() == null ? null : dto.email().toLowerCase());
+        u.setLanguage(dto.language());
         u.setSenhaHash(dto.senha() == null ? null : BCrypt.hashpw(dto.senha(), BCrypt.gensalt()));
         u.setWins(5L);
         u.setStreaks(0L);
@@ -237,6 +239,7 @@ public class UsuarioService {
             u.setNascimento(dto.nascimento());
         }
         if (dto.email() != null) u.setEmail(dto.email().toLowerCase());
+        if (dto.language() != null) u.setLanguage(dto.language());
         if (dto.cpf() != null) u.setCpf(normalizarCpf(dto.cpf()));
         if (dto.senha() != null) u.setSenhaHash(BCrypt.hashpw(dto.senha(), BCrypt.gensalt()));
         if (dto.wins() != null) u.setWins(dto.wins());
@@ -461,7 +464,7 @@ public class UsuarioService {
     private UsuarioDTO toDTO(Usuario u) {
         return new UsuarioDTO(
                 u.getId(), u.getNome(), u.getSobrenome(), u.getCpf(), u.getTelefone(),
-                u.getNascimento(), u.getEmail(), u.getWins(), u.getStreaks(), u.getXp(), u.getPermissao(),
+                u.getNascimento(), u.getEmail(), u.getLanguage(), u.getWins(), u.getStreaks(), u.getXp(), u.getPermissao(),
                 u.getIsPremium() != null ? u.getIsPremium() : false,
                 u.getExtendedTime() != null ? u.getExtendedTime() : false,
                 u.getSelectedPractice(),

@@ -22,6 +22,7 @@ public class Usuario {
     private String telefone;
     private LocalDate nascimento;
     private String email;
+    private String language;
     private String senhaHash;
     private Long wins;
     private Long streaks;

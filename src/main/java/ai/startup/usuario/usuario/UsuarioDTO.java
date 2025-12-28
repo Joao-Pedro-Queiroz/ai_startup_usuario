@@ -11,6 +11,7 @@ public record UsuarioDTO(
         String telefone,
         LocalDate nascimento,
         String email,
+        String language,
         Long wins,
         Long streaks,
         Long xp,
