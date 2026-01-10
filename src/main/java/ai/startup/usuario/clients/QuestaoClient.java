@@ -1,6 +1,7 @@
 package ai.startup.usuario.clients;
 
 import org.springframework.http.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -10,7 +11,11 @@ import java.util.Map;
 @Component
 public class QuestaoClient {
     private final RestTemplate rt = new RestTemplate();
-    private final String base = "http://localhost:8082"; // Porta do serviço de questões
+    private final String base;
+
+    public QuestaoClient(@Value("${api.questao.base}") String base) {
+        this.base = base;
+    }
 
     /**
      * Busca todas as questões de um usuário

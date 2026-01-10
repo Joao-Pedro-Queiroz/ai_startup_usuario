@@ -1,6 +1,7 @@
 package ai.startup.usuario.clients;
 
 import org.springframework.http.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -9,7 +10,11 @@ import java.util.Map;
 @Component
 public class PerfilClient {
     private final RestTemplate rt = new RestTemplate();
-    private final String base = "http://localhost:8083";
+    private final String base;
+
+    public PerfilClient(@Value("${api.perfil.base}") String base) {
+        this.base = base;
+    }
 
     public void criarPerfil(String bearerToken, Map<String,Object> body) {
         var url = base + "/perfis";
